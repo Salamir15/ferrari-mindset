@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ferrari Mindset - Protocolo de Alto Rendimiento</title>
+    <!-- Configuración para App Móvil (PWA ready) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        .ferrari-red { color: #ff2800; }
+        .bg-ferrari-red { background-color: #ff2800; }
+        
+        .card {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .task-item:active {
+            transform: scale(0.97);
+            background: #222;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        input[type="checkbox"] {
+            accent-color: #ff2800;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+
+        .loading-spinner {
+            border: 2px solid #333;
+            border-top: 2px solid #ff2800;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom scrollbar para estética premium */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        /* Ajustes para notch en iPhone */
+        @supports (padding: env(safe-area-inset-top)) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+    </style>
+</head>
+<body class="p-5 md:p-10">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header con estética de tablero de coche de carreras -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+            <div>
+                <h1 class="text-5xl font-extrabold tracking-tighter italic leading-none">FERRARI<span class="text-white font-light">MINDSET</span></h1>
+                <p class="text-gray-500 text-xs mt-2 uppercase tracking-[0.2em] font-semibold">Sincronización Neurobiológica V3.0</p>
+            </div>
+            <div class="w-full md:w-64 bg-gray-900 p-4 rounded-xl border border-gray-800">
+                <div class="flex justify-between items-end mb-2">
+                    <span class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Rendimiento</span>
+                    <span id="progress-text" class="text-ferrari-red font-mono font-bold text-sm">0%</span>
+                </div>
+                <div class="w-full bg-black h-1.5 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-ferrari-red h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Layout de Columnas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Columna Izquierda: Identidad y Herramientas IA -->
+            <div class="lg:col-span-4 space-y-6">
+                <!-- Sección Kisogi -->
+                <div class="card p-6 shadow-2xl">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-ferrari-red font-black text-[10px] uppercase tracking-[0.2em]"><i class="fas fa-crosshairs mr-2"></i> El Kisogi</h2>
+                        <button onclick="analyzePurpose()" class="text-[9px] bg-white text-black font-bold px-3 py-1 rounded-full hover:bg-ferrari-red hover:text-white transition-colors uppercase">
+                            Analizar ✨
+                        </button>
+                    </div>
+                    <textarea id="kisogi-input" class="w-full bg-black/50 border border-gray-800 rounded-lg p-3 focus:border-ferrari-red outline-none text-sm h-20 resize-none transition-all" placeholder="Escribe la meta que te obliga a renacer..."></textarea>
+                    
+                    <div class="mt-6">
+                        <h2 class="text-gray-500 font-black text-[10px] uppercase tracking-[0.2em] mb-3"><i class="fas fa-ghost mr-2"></i> Antivisión</h2>
+                        <textarea id="antivision-input" class="w-full bg-black/50 border border-gray-800 rounded-lg p-3 focus:border-gray-500 outline-none text-sm h-20 resize-none transition-all" placeholder="¿Qué pasará si te quedas igual?"></textarea>
+                    </div>
+
+                    <div id="ai-feedback" class="mt-4 p-3 bg-red-950/20 rounded-lg text-[11px] text-gray-300 hidden italic border-l-2 border-ferrari-red animate-pulse">
+                        <!-- AI Response -->
+                    </div>
+                </div>
+
+                <!-- Reframe IA -->
+                <div class="card p-6 border-ferrari-red/20 bg-gradient-to-b from-gray-900 to-black">
+                    <h2 class="text-white font-bold text-[10px] uppercase tracking-[0.2em] mb-4"><i class="fas fa-bolt mr-2"></i> Reframing Cognitivo</h2>
+                    <input id="complaint-input" type="text" class="w-full bg-black border border-gray-800 rounded-lg p-3 text-xs mb-3 outline-none focus:border-ferrari-red" placeholder="Pensamiento limitante...">
+                    <button onclick="reframingIA()" id="reframe-btn" class="w-full bg-ferrari-red text-white font-black py-3 rounded-lg text-[10px] uppercase tracking-widest hover:brightness-110 transition active:scale-95 shadow-lg shadow-red-900/20">
+                        Convertir en Combustible
+                    </button>
+                    <div id="reframe-result" class="mt-4 text-xs text-gray-200 font-medium italic hidden leading-relaxed"></div>
+                </div>
+
+                <!-- Timer -->
+                <div class="card p-6 text-center bg-black">
+                    <p class="text-[9px] text-gray-500 uppercase tracking-widest mb-4">Deep Work Session</p>
+                    <div id="timer-display" class="text-5xl font-black font-mono tracking-tighter mb-6">25:00</div>
+                    <div class="flex justify-center gap-3">
+                        <button id="start-timer" class="flex-1 bg-white text-black font-black py-3 rounded-xl text-xs uppercase transition active:scale-95">Iniciar</button>
+                        <button id="reset-timer" class="p-3 bg-gray-900 text-gray-400 rounded-xl hover:text-white transition active:scale-95"><i class="fas fa-undo-alt"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: El Protocolo -->
+            <div class="lg:col-span-8 space-y-6">
+                <!-- Generador de Micro-Hábitos -->
+                <div class="card p-5 border-dashed border-ferrari-red/30 flex flex-col sm:flex-row items-center justify-between gap-5 bg-ferrari-red/5">
+                    <div class="flex items-center gap-4">
+                        <div class="p-4 bg-ferrari-red text-white rounded-2xl shadow-xl shadow-red-900/30">
+                            <i class="fas fa-atom text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black uppercase tracking-tight">Acción Atómica ✨</h3>
+                            <p id="micro-habit-text" class="text-[11px] text-gray-500 mt-0.5">Define tu victoria rápida del día.</p>
+                        </div>
+                    </div>
+                    <button onclick="generateMicroHabit()" id="habit-btn" class="w-full sm:w-auto bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-ferrari-red hover:text-white transition-all shadow-xl">
+                        Calibrar
+                    </button>
+                </div>
+
+                <!-- Lista de Tareas dinámicas -->
+                <div id="tasks-container" class="space-y-8">
+                    <!-- Inyectado por JS -->
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-20 text-center pb-12">
+            <div class="h-px w-20 bg-gray-800 mx-auto mb-6"></div>
+            <p class="text-[10px] text-gray-600 uppercase tracking-[0.4em] font-medium italic">Vincit qui se vincit</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const apiKey = ""; // Pega aquí tu clave de Google AI Studio
+        
+        const protocolData = [
+            { section: "01. El Encendido (Sincronía)", tasks: [
+                "Hidratación Celular (500ml + sal mineral)",
+                "Exposición Fotónica (Luz solar directa)",
+                "Carga Dopaminérgica (Ducha fría o ejercicio)",
+                "Alineación Kisogi (Visualización activa)",
+                "Protocolo de Silencio (Meditación 10 min)"
+            ]},
+            { section: "02. Ejecución de Élite (Deep Work)", tasks: [
+                "Bloqueo de Distracciones (Modo Avión)",
+                "Deep Work Sprint 1 (90 min)",
+                "Revisión de Métricas (+1%)",
+                "Gestión de Energía (No cafeína inmediata)"
+            ]},
+            { section: "03. El Pit Stop (Recuperación)", tasks: [
+                "Nutrición Anti-inflamatoria",
+                "Caminata Cognitiva (Sin dispositivos)",
+                "Lectura de Expansión Mental"
+            ]},
+            { section: "04. El Apagado (Higiene)", tasks: [
+                "Análisis de Desempeño (Journaling)",
+                "Planificación del Mañana",
+                "Bloqueo de Luz Azul (Gafas o software)",
+                "Optimización Térmica (Habitación fría)"
+            ]}
+        ];
+
+        // --- MOTOR IA (EXPONENTIAL BACKOFF INCLUIDO) ---
+        async function callGemini(prompt, systemInstruction = "") {
+            if (!apiKey) {
+                console.warn("Falta la API Key de Gemini.");
+                return "Configura tu API Key para activar la IA.";
+            }
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (error) {
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+            return "La IA está fuera de línea temporalmente.";
+        }
+
+        // --- LÓGICA DE HERRAMIENTAS ---
+        async function analyzePurpose() {
+            const kisogi = document.getElementById('kisogi-input').value;
+            if (!kisogi) return;
+            const fb = document.getElementById('ai-feedback');
+            fb.classList.remove('hidden');
+            fb.innerHTML = '<span class="loading-spinner"></span> Calibrando sistema...';
+            const res = await callGemini(`Meta: ${kisogi}. Analiza congruencia neurobiológica.`, "Eres un estratega de alto rendimiento. Máximo 20 palabras.");
+            fb.innerText = res;
+        }
+
+        async function reframingIA() {
+            const complaint = document.getElementById('complaint-input').value;
+            if (!complaint) return;
+            const resEl = document.getElementById('reframe-result');
+            const btn = document.getElementById('reframe-btn');
+            btn.innerHTML = '<span class="loading-spinner"></span> TRANSFORMANDO...';
+            const res = await callGemini(`Reencuadra esto para un atleta mental: "${complaint}"`, "Eres experto en estoicismo y rendimiento.");
+            resEl.innerText = res;
+            resEl.classList.remove('hidden');
+            btn.innerText = 'Convertir en Combustible';
+        }
+
+        async function generateMicroHabit() {
+            const kisogi = document.getElementById('kisogi-input').value || "Excelencia";
+            const hText = document.getElementById('micro-habit-text');
+            const btn = document.getElementById('habit-btn');
+            btn.innerHTML = '<span class="loading-spinner"></span>';
+            const res = await callGemini(`Dame una micro-acción atómica para hoy basada en: ${kisogi}`, "Una frase corta y poderosa.");
+            hText.innerText = res;
+            btn.innerText = 'RECALIBRAR';
+        }
+
+        // --- MOTOR DE UI Y PERSISTENCIA ---
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            let html = '';
+            protocolData.forEach((group, gIdx) => {
+                html += `
+                    <div>
+                        <h3 class="text-[10px] font-black text-gray-500 mb-5 tracking-[0.3em] uppercase flex items-center">
+                            <span class="w-8 h-px bg-ferrari-red/30 mr-3"></span>${group.section}
+                        </h3>
+                        <div class="grid grid-cols-1 gap-3">
+                `;
+                group.tasks.forEach((task, tIdx) => {
+                    const id = `task-${gIdx}-${tIdx}`;
+                    html += `
+                        <div class="card p-5 flex items-center justify-between cursor-pointer group" onclick="toggleTask('${id}')">
+                            <span id="text-${id}" class="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors">${task}</span>
+                            <input type="checkbox" id="${id}" class="pointer-events-none">
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleTask(id) {
+            const cb = document.getElementById(id);
+            const txt = document.getElementById(`text-${id}`);
+            if (!cb) return;
+            cb.checked = !cb.checked;
+            txt.classList.toggle('completed', cb.checked);
+            updateProgress();
+            saveData();
+        }
+
+        function updateProgress() {
+            const total = document.querySelectorAll('input[type="checkbox"]').length;
+            const checked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+            const perc = Math.round((checked / total) * 100);
+            document.getElementById('progress-bar').style.width = `${perc}%`;
+            document.getElementById('progress-text').innerText = `${perc}%`;
+        }
+
+        // --- CRONÓMETRO ---
+        let tSecs = 25 * 60;
+        let tInt = null;
+
+        function updateTDisplay() {
+            const m = Math.floor(tSecs / 60);
+            const s = tSecs % 60;
+            document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        document.getElementById('start-timer').addEventListener('click', function() {
+            if (tInt) {
+                clearInterval(tInt);
+                tInt = null;
+                this.innerText = 'Continuar';
+                this.classList.replace('bg-ferrari-red', 'bg-white');
+            } else {
+                this.innerText = 'Pausar';
+                this.classList.add('bg-ferrari-red', 'text-white');
+                tInt = setInterval(() => {
+                    if (tSecs > 0) { tSecs--; updateTDisplay(); }
+                    else { clearInterval(tInt); alert("Sprint terminado. ¡Recupera!"); }
+                }, 1000);
+            }
+        });
+
+        document.getElementById('reset-timer').addEventListener('click', () => {
+            clearInterval(tInt);
+            tInt = null;
+            tSecs = 25 * 60;
+            updateTDisplay();
+            document.getElementById('start-timer').innerText = 'Iniciar';
+        });
+
+        // --- SISTEMA DE GUARDADO ---
+        function saveData() {
+            const state = {
+                k: document.getElementById('kisogi-input').value,
+                a: document.getElementById('antivision-input').value,
+                c: Array.from(document.querySelectorAll('input[type="checkbox"]')).map(x => x.checked)
+            };
+            localStorage.setItem('ferrari_v_final', JSON.stringify(state));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('ferrari_v_final');
+            if (saved) {
+                const state = JSON.parse(saved);
+                document.getElementById('kisogi-input').value = state.k || '';
+                document.getElementById('antivision-input').value = state.a || '';
+                const cbs = document.querySelectorAll('input[type="checkbox"]');
+                state.c.forEach((val, i) => {
+                    if (cbs[i]) {
+                        cbs[i].checked = val;
+                        if(val) document.getElementById(`text-${cbs[i].id}`).classList.add('completed');
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        window.onload = () => {
+            renderTasks();
+            loadData();
+            document.getElementById('kisogi-input').addEventListener('input', saveData);
+            document.getElementById('antivision-input').addEventListener('input', saveData);
+        };
+    </script>
+</body>
+</html>
